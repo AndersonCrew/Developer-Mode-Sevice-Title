@@ -3,6 +3,7 @@ package vn.doanhtam.developertile
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import android.provider.Settings
 
 internal class DeveloperControl(private val context: Context) {
@@ -25,7 +26,14 @@ internal class DeveloperControl(private val context: Context) {
             val keys = if (enabled) {
                 listOf(Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, Settings.Global.ADB_ENABLED)
             } else {
-                listOf(Settings.Global.ADB_ENABLED, Settings.Global.DEVELOPMENT_SETTINGS_ENABLED)
+                buildList {
+                    if (Build.VERSION.SDK_INT >= 30) {
+                        // ADB_WIFI_ENABLED is not exposed in the public Android SDK.
+                        add("adb_wifi_enabled")
+                    }
+                    add(Settings.Global.ADB_ENABLED)
+                    add(Settings.Global.DEVELOPMENT_SETTINGS_ENABLED)
+                }
             }
             for (key in keys) {
                 if (!Settings.Global.putInt(context.contentResolver, key, value)) {
